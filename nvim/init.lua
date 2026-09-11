@@ -44,8 +44,6 @@ require("ime").setup()
 vim.pack.add({
     "https://github.com/nvim-treesitter/nvim-treesitter", --> :TSUpdate
     "https://github.com/lewis6991/gitsigns.nvim",
-    "https://github.com/selimacerbas/live-server.nvim",
-    "https://github.com/jay-waves/markdown-preview.nvim",
     "https://github.com/ibhagwan/fzf-lua",
     "https://github.com/nvim-tree/nvim-tree.lua",
     { src = "https://github.com/saghen/blink.cmp", version = "v1", },
@@ -58,7 +56,7 @@ vim.keymap.set("n", "gp", "<cmd>FzfLua<cr>", {
 
 -- Theme preset: change this string and restart Neovim. See lua/theme.lua for presets.
 -- github_dark, nord, gruvbox, catppuccin_macchiato/mocha/frappe
-require("theme").setup("nord")
+require("theme").setup("gruvbox")
 
 --> PlugIn: NvimTree
 require("nvim-tree").setup({
@@ -186,97 +184,5 @@ require("blink.cmp").setup({
 })
 
 
--->> Preivewer: Typst + Tinymist
-vim.api.nvim_create_autocmd("FileType", {
-    pattern = "typst",
-    callback = function()
-        vim.opt_local.backupcopy = "yes"
-    end,
-})
-
-vim.api.nvim_create_user_command("TypstPreview", function()
-    local bufnr = vim.api.nvim_get_current_buf()
-    local client = vim.lsp.get_clients({
-        bufnr = bufnr,
-        name = "tinymist",
-    })[1]
-
-    if not client then
-        vim.notify(
-            "Tinymist is not attached to the current buffer",
-            vim.log.levels.ERROR
-        )
-        return
-    end
-
-    client:exec_cmd({
-        title = "Start Tinymist Preview",
-        command = "tinymist.startDefaultPreview",
-        arguments = {},
-    }, {
-        bufnr = bufnr,
-    }, function(err)
-        if err then
-            vim.notify(
-                vim.inspect(err),
-                vim.log.levels.ERROR,
-                { title = "Tinymist Preview" }
-            )
-        end
-    end)
-
-end, {
-desc = "start Tinymist preview for the focused Typst buffer",
-})
-
-vim.api.nvim_create_autocmd("BufEnter", {
-    pattern = "*.typ",
-    callback = function(args)
-        vim.schedule(function()
-            if vim.api.nvim_get_current_buf() ~= args.buf then
-                return
-            end
-
-            local client = vim.lsp.get_clients({
-                bufnr = args.buf,
-                name = "tinymist",
-            })[1]
-
-            if not client then
-                return
-            end
-
-            client:exec_cmd({
-                title = "Focus Tinymist Preview",
-                command = "tinymist.focusMain",
-                arguments = { vim.api.nvim_buf_get_name(args.buf) },
-            }, {
-                bufnr = args.buf,
-            })
-        end)
-    end,
-    desc = "focus Tinymist preview when entering a Typst buffer",
-})
-
-vim.lsp.config("tinymist", {
-    cmd = { "tinymist", "lsp" },
-    filetypes = { "typst" },
-
-    capabilities = require("blink.cmp").get_lsp_capabilities(),
-
-    root_markers = { ".git", },
-
-    settings = {
-        projectResolution = "singleFile",
-        formatterMode = "typstyle",
-    },
-})
-
-vim.lsp.enable("tinymist")
-
---> PlugIn & Preiviewer: Markdown Preview
-require("markdown_preview").setup({
-    default_theme = "auto",
-    follow_current_buffer = true,
-})
-
+--> Typst & Markdown Previewer
+require("preview").setup()

@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<title>Typst Preview</title>
+<style>
+  :root { color-scheme: light dark; font: 15px system-ui, sans-serif; }
+  body { margin: 0; }
+  iframe { display: block; border: 0; width: 100vw; height: 100vh; }
+  #status { position: fixed; top: 12px; left: 50%; transform: translateX(-50%);
+    padding: 10px 16px; border-radius: 6px; background: Canvas; color: CanvasText;
+    box-shadow: 0 2px 12px #0003; }
+  [hidden] { display: none !important; }
+</style>
+<div id="status" role="status">Connecting to Neovim…</div>
+<iframe id="preview" title="Typst document preview" hidden></iframe>
+<script>
+(() => {
+  const frame = document.getElementById("preview");
+  const status = document.getElementById("status");
+  const params = new URLSearchParams(location.search);
+  let ended = false;
+  const events = new EventSource("/__live/events");
+
+  function show(text) {
+    status.textContent = text;
+    status.hidden = false;
+  }
+
+  function finish() {
+    if (ended) return;
+    ended = true;
+    events.close();
+    frame.src = "about:blank";
+    frame.hidden = true;
+    window.close();
+    // Browsers may reject close() for externally opened tabs.
+    show("Preview ended. You can close this tab.");
+  }
+
+  const url = new URL(params.get("url") || "about:blank");
+  if (url.protocol === "http:" && url.hostname === "127.0.0.1") {
+    frame.src = url.href;
+    frame.hidden = false;
+    status.hidden = true;
+  } else {
+    show("Invalid Typst preview URL.");
+  }
+  events.addEventListener("typst-close", finish);
+  // A disconnect alone can also mean a transient failure. Reconnect instead
+  // of closing the user's page; only an explicit exit/stop event closes it.
+  events.onerror = () => {
+    if (!ended) show("Neovim disconnected. Waiting to reconnect…");
+  };
+  window.addEventListener("pagehide", () => events.close());
+})();
+</script>
+</html>

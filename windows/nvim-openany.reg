@@ -1,0 +1,11 @@
+Windows Registry Editor Version 5.00
+
+; ===== Shift + Right Click: Open with Neovim WT (all files) =====
+
+[HKEY_CURRENT_USER\Software\Classes\*\shell\NeovimWT]
+@="Open with Neovim (WT)"
+"Icon"="%SystemRoot%\\System32\\SHELL32.dll,70"
+"Extended"=""
+
+[HKEY_CURRENT_USER\Software\Classes\*\shell\NeovimWT\command]
+@="wt.exe -p \"Neovim\" -- nvim.exe \"%1\""

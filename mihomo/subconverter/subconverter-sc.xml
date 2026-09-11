@@ -1,0 +1,18 @@
+<service>
+  <id>subconverter</id>
+  <name>subconverter</name>
+  <description>subconverter service</description>
+
+  <executable>D:\bin\subconverter.exe</executable>
+  <arguments>-f "C:\Users\jay-waves\AppData\Local\mihomo\subconverter\pref.toml"</arguments>
+  <workingdirectory>C:\Users\jay-waves\AppData\Local\mihomo\subconverter</workingdirectory>
+
+  <logpath>C:\Users\jay-waves\AppData\Local\mihomo\subconverter</logpath>
+  <log mode="reset"/>
+
+  <startmode>Automatic</startmode>
+
+  <onfailure action="restart" delay="5 sec"/>
+  <onfailure action="restart" delay="10 sec"/>
+  <onfailure action="none"/>
+</service>
