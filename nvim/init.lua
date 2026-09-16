@@ -28,9 +28,15 @@ desc = "Show line diagnostics",
 })
 
 vim.keymap.set("n", "gL", function()
-    vim.diagnostic.setloclist({ open = true })
+    local win = vim.fn.getloclist(0, { winid = 0 }).winid
+
+    if win ~= 0 then
+        vim.cmd("lclose")
+    else
+        vim.diagnostic.setloclist({ open = true })
+    end
 end, {
-desc = "Show buffer diagnostics",
+desc = "Toggle diagnostics loclist",
 })
 
 --> Click + Ctrl to jump to file
@@ -47,10 +53,15 @@ vim.pack.add({
     "https://github.com/ibhagwan/fzf-lua",
     "https://github.com/nvim-tree/nvim-tree.lua",
     { src = "https://github.com/saghen/blink.cmp", version = "v1", },
+    "https://github.com/jay-waves/markdown-preview.nvim",
 })
 
 --> PlugIn: FzfLua
 vim.keymap.set("n", "gp", "<cmd>FzfLua<cr>", {
+    desc = "Command Palette",
+})
+
+vim.keymap.set("n", "gb", "<cmd>FzfLua buffers<cr>", {
     desc = "Command Palette",
 })
 
@@ -63,6 +74,9 @@ require("nvim-tree").setup({
     filters = {
         dotfiles = false,
         git_ignored = false,
+    },
+    git = {
+        enable = false,
     },
     renderer = {
         icons = {
@@ -94,7 +108,7 @@ require("nvim-tree").setup({
     },
 })
 
-vim.keymap.set("n", "ge", "<cmd>NvimTreeToggle<cr>")
+vim.keymap.set("n", "ge", "<cmd>NvimTreeFindFileToggle<cr>")
 
 --> PlugIn: GitSign
 require("gitsigns").setup({})
@@ -185,4 +199,28 @@ require("blink.cmp").setup({
 
 
 --> Typst & Markdown Previewer
-require("preview").setup()
+vim.lsp.config("tinymist", {
+    cmd = { "tinymist", "lsp" },
+    filetypes = { "typst" },
+    capabilities = require("blink.cmp").get_lsp_capabilities(),
+    root_markers = { ".git" },
+    settings = { projectResolution = "singleFile", formatterMode = "typstyle" },
+    handlers = {
+        ["tinymist/preview/dispose"] = function(...)
+            return require("typst_preview").on_dispose(...)
+        end,
+    },
+})
+vim.lsp.enable("tinymist")
+vim.api.nvim_create_autocmd("FileType", {
+    group = vim.api.nvim_create_augroup("TypstSettings", { clear = true }),
+    pattern = "typst",
+    callback = function() vim.opt_local.backupcopy = "yes" end,
+})
+require("markdown_preview").setup({
+    default_theme = "auto",
+    follow_current_buffer = true,
+    scroll_sync = true,
+    initial_scroll = false,
+})
+require("typst_preview").setup()
