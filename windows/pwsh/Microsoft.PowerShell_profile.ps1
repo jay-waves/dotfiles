@@ -2,21 +2,6 @@
 $OutputEncoding = [System.Text.Encoding]::UTF8
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 
-# diable auto-update detect 
-[Environment]::SetEnvironmentVariable( 'POWERSHELL_UPDATECHECK', 'Off', 'User')
-
-
-# auto completion
-$completionDir = Join-Path (Split-Path -Parent $PROFILE) 'Completions'
-
-if (Test-Path $completionDir) {
-    Get-ChildItem -Path $completionDir -Filter *.ps1 |
-    ForEach-Object {
-        . $_.FullName
-    }
-}
-
-
 Import-Module CompletionPredictor
 
 # PSReadLine
@@ -91,10 +76,10 @@ Invoke-Expression (& {
 
 
 # alias
-Remove-Alias `
-    ls,cat,cp,mv,rm,curl,wget,sort,tee,where,clear,man `
-    -Force `
-    -ErrorAction SilentlyContinue
+# Remove-Alias `
+#     ls,cat,cp,mv,rm,curl,wget,sort,tee,where,clear,man `
+#     -Force `
+#     -ErrorAction SilentlyContinue
 
 # Powershell Development Environment for VS2022
 # $vsDevShellModule = "C:\Program Files\Microsoft Visual Studio\18\Insiders\Common7\Tools\Microsoft.VisualStudio.DevShell.dll"

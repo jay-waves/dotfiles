@@ -1,13 +1,26 @@
 local M = {}
 
--- Use each theme's native transparency settings for mixed backgrounds.
-local themes = {
-    github_dark = {
-        name = "github_dark_tritanopia",
-        lualine = "auto",
+local function github(variant)
+    return {
+        name = "github_" .. variant .. "_tritanopia",
+        background = variant,
         module = "github-theme",
         options = { options = { transparent = true } },
-    },
+    }
+end
+
+local function catppuccin(flavour)
+    return {
+        name = "catppuccin-" .. flavour,
+        lualine = "catppuccin-nvim",
+        module = "catppuccin",
+        options = { transparent_background = true },
+    }
+end
+
+local themes = {
+    github_light = github("light"),
+    github_dark = github("dark"),
     nord = {
         name = "nord",
         lualine = "nord",
@@ -15,24 +28,9 @@ local themes = {
             vim.g.nord_disable_background = true
         end,
     },
-    catppuccin_mocha = {
-        name = "catppuccin-mocha",
-        lualine = "catppuccin-nvim",
-        module = "catppuccin",
-        options = { transparent_background = true },
-    },
-    catppuccin_macchiato = {
-        name = "catppuccin-macchiato",
-        lualine = "catppuccin-nvim",
-        module = "catppuccin",
-        options = { transparent_background = true },
-    },
-    catppuccin_frappe = {
-        name = "catppuccin-frappe",
-        lualine = "catppuccin-nvim",
-        module = "catppuccin",
-        options = { transparent_background = true },
-    },
+    catppuccin_mocha = catppuccin("mocha"),
+    catppuccin_macchiato = catppuccin("macchiato"),
+    catppuccin_frappe = catppuccin("frappe"),
     gruvbox = {
         name = "gruvbox",
         lualine = "gruvbox",
@@ -51,7 +49,7 @@ function M.setup(theme_name)
     })
 
     local theme = assert(themes[theme_name], "Unknown theme preset: " .. theme_name)
-    vim.opt.background = "dark"
+    vim.opt.background = theme.background or "dark"
     if theme.module then
         require(theme.module).setup(theme.options)
     elseif theme.setup then
@@ -61,34 +59,24 @@ function M.setup(theme_name)
 
     require("lualine").setup({
         options = {
-            theme = theme.lualine, 
-            icons_enabled = true,
+            theme = theme.lualine or "auto",
             globalstatus = true,
         },
-
         sections = {
             lualine_a = { "mode" },
-            lualine_c = { { "filename", path = 1, } },
+            lualine_c = { { "filename", path = 1 } },
             lualine_x = { "filetype" },
             lualine_y = { "progress" },
-            -- lualine_z = { "location" },
         },
-
         tabline = {
             lualine_a = {
                 {
                     "buffers",
-                    mode = 0, 
                     max_length = function()
                         return math.floor(vim.o.columns * 0.95)
                     end,
-                    show_filename_only = true,
-
-                    show_modified_status = true,  
-                    symbols = {
-                        modified = '*', 
-                    },        
-                }
+                    symbols = { modified = "*" },
+                },
             },
         },
     })
