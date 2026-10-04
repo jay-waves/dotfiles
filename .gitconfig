@@ -1,0 +1,35 @@
+[http]
+	proxy = http://127.0.0.1:7890
+	postBuffer = 524288000
+[https]
+	proxy = http://127.0.0.1:7890
+[user]
+	email = jay.waves@outlook.com
+	name = jay-waves
+[credential "https://gitee.com"]
+	provider = generic
+[core]
+	pager = bat --pager=builtin
+	autocrlf = true
+	quotepath = false
+[interactive]
+	diffFilter = delta
+[delta]
+	navigate = true
+	dark = true
+	side-by-side = false
+	line-numbers = true
+[merge]
+	conflictStyle = zdiff3
+	tool = nvimdiff
+[filter "lfs"]
+	clean = git-lfs clean -- %f
+	smudge = git-lfs smudge -- %f
+	process = git-lfs filter-process
+	required = true
+[diff]
+	tool = nvimdiff
+[difftool]
+	prompt = true
+[mergetool]
+	prompt = false

@@ -26,7 +26,8 @@ function M.setup()
       end
 
       vim.o.title = true
-      vim.o.titlestring = "%t"
+      -- 标题表达式会随 modified 状态更新：未保存时显示 *，保存后消失。
+      vim.o.titlestring = "%t%{&modified ? ' *' : ''}"
     end,
   })
 

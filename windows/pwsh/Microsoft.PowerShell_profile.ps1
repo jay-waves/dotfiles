@@ -1,3 +1,5 @@
+# $PROFILE: `~/Documents/Powershell/Microsoft.PowerShell_profile.ps1` 
+
 # using utf-8
 $OutputEncoding = [System.Text.Encoding]::UTF8
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
@@ -30,6 +32,7 @@ function OnViModeChange {
 Set-PSReadLineOption -EditMode Vi
 Set-PSReadLineOption -ViModeIndicator Script -ViModeChangeHandler $Function:OnViModeChange
 
+# lazy load pSFzf on Ctrl+R / Ctrl+T
 Import-Module PSFzf
 Set-PsFzfOption -PSReadlineChordProvider 'Ctrl+t' -PSReadlineChordReverseHistory 'Ctrl+r'
 
@@ -43,6 +46,7 @@ function prompt {
     $checkIcon = [char]::ConvertFromUtf32(0xe63f)
     $errorIcon = [char]::ConvertFromUtf32(0xf071)
 
+    # donot use posh-git, which will significantly slow down startup
     $gitBranch = git symbolic-ref --quiet --short HEAD 2>$null
     $gitResult = $LASTEXITCODE
 
@@ -75,11 +79,11 @@ Invoke-Expression (& {
 })
 
 
-# alias
-# Remove-Alias `
-#     ls,cat,cp,mv,rm,curl,wget,sort,tee,where,clear,man `
-#     -Force `
-#     -ErrorAction SilentlyContinue
+alias
+Remove-Alias `
+    ls,cat,cp,mv,rm,curl,wget,sort,tee,where,clear,man `
+    -Force `
+    -ErrorAction SilentlyContinue
 
 # Powershell Development Environment for VS2022
 # $vsDevShellModule = "C:\Program Files\Microsoft Visual Studio\18\Insiders\Common7\Tools\Microsoft.VisualStudio.DevShell.dll"

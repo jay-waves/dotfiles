@@ -1,0 +1,10 @@
+NIU_PROMPT_CWD_STYLE='home'
+NIU_COMPLETION_STYLE='list'
+NIU_DISABLE_DEFAULT_PLUGINS=1
+export NIU_PROMPT_CWD_STYLE NIU_COMPLETION_STYLE NIU_DISABLE_DEFAULT_PLUGINS
+
+NIU_PLUGINS=(prompt-core git starship zoxide)
+
+export VISUAL=nvim
+export EDITOR=nvim
+export PAGER='bat --pager=builtin'

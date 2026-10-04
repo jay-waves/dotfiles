@@ -7,16 +7,22 @@ vim.opt.cursorline = true
 vim.opt.wrap = false
 
 vim.opt.scrolloff = 10
+vim.opt.mousemodel = "extend"
 
 vim.opt.shiftwidth = 4
 vim.opt.expandtab = true
 
--- search 
+-- instead of using im-select to switch to US.English,
+-- i want to use PinYin.English.
+-- so we need to call the windows imm32.dl directly using the LuaJIT FFI
+require("ime").setup()
+
+-- search
 vim.opt.ignorecase = true
 vim.opt.smartcase = true
 
-vim.keymap.set("n", "j", "gj", { noremap = true })
-vim.keymap.set("n", "k", "gk", { noremap = true })
+vim.keymap.set("n", "j", "gj")
+vim.keymap.set("n", "k", "gk")
 
 vim.keymap.set("n", "<leader>h", vim.lsp.buf.hover, {
     desc = "Show documentation",
@@ -25,39 +31,70 @@ vim.keymap.set("n", "<leader>h", vim.lsp.buf.hover, {
 --> Click + Ctrl to jump to file
 vim.keymap.set("n", "<C-LeftMouse>", "<LeftMouse>gf")
 
--->  instead of using im-select to switch to US.English, 
---> i want to use PinYin.English. 
---> so we need to call the windows imm32.dl directly using the LuaJIT FFI 
-require("ime").setup()
+--> Use Ctrl+S to save file
+vim.keymap.set({ "n", "i", "x" }, "<C-s>", "<Cmd>write<CR>", { desc = "Save file" })
 
--- Theme preset: change this string and restart Neovim. See lua/theme.lua for presets.
--- github_dark/light, nord, gruvbox, catppuccin_macchiato/mocha/frappe
-require("theme").setup("github_dark")
+--> Use <leader>y, <leader>p to paste/yank system clipboards
+vim.keymap.set({ "n", "v" }, "<leader>y", [["+y]])
 
-require("title").setup()
+vim.keymap.set({ "n", "v" }, "<leader>p", [["+p]])
 
---> PlugIn: vim-matchup, use %, [%, ]% and g%, <leader>%
-vim.g.matchup_matchparen_offscreen = {
-    method = "popup",
-}
+vim.keymap.set("n", "<leader>ya", function()
+    local path = vim.fs.normalize(vim.fn.expand("%:p"))
+    vim.fn.setreg("+", path)
+    print("Copied: " .. path)
+end, { desc = "Copy absolute path" })
+
+vim.keymap.set("n", "<leader>yr", function()
+    local path = vim.fs.normalize(vim.fn.expand("%:."))
+    vim.fn.setreg("+", path)
+    print("Copied: " .. path)
+end, { desc = "Copy relative path" })
+
+-- dark themes: nordbones, github, gruvbox, zenbones
+-- light themes: github_light, zenwritten_light, patana_light
+require("theme").setup("nordbones")
 
 vim.pack.add({
-    "https://github.com/nvim-treesitter/nvim-treesitter", --> :TSUpdate
-    "https://github.com/andymass/vim-matchup",
-
-    "https://github.com/lewis6991/gitsigns.nvim",
+    "https://github.com/nvim-lualine/lualine.nvim",
     "https://github.com/ibhagwan/fzf-lua",
-    { src = "https://github.com/saghen/blink.cmp", version = "v1", },
     "https://github.com/nvim-mini/mini.files",
-    "https://github.com/jay-waves/markdown-preview.nvim",
+    "https://github.com/nvim-mini/mini.surround",
 })
 
+require("cmdline").setup()
+require("title").setup()
+require("git").setup()
+
+--> PlugIn: Lualine
+require("lualine").setup({
+    options = {
+        globalstatus = true,
+    },
+    sections = {
+        lualine_a = { "mode" },
+        lualine_c = { { "filename", path = 1 } },
+        lualine_x = { "filetype" },
+        lualine_y = { "progress" },
+    },
+    tabline = {
+        lualine_a = {
+            {
+                "buffers",
+                max_length = function()
+                    return math.floor(vim.o.columns * 0.95)
+                end,
+                symbols = { modified = "*" },
+            },
+        },
+    },
+})
 
 --> PlugIn: Mini.Files, vim-like keymap, and = to save changes
 require("mini.files").setup({
     mappings = {
         go_in = "L",
-        go_in_plus =  "l",
+        go_in_plus = "l",
     },
     windows = {
         max_number = 3,
@@ -68,119 +105,61 @@ require("mini.files").setup({
     },
 })
 
-vim.keymap.set("n", "<leader>e", function() 
-    require("mini.files").open(vim.api.nvim_buf_get_name(0)) 
-end)
+vim.keymap.set("n", "<leader>e", function()
+    require("mini.files").open(vim.api.nvim_buf_get_name(0))
+end, { desc = "Open Mini.Files", })
+
+vim.keymap.set("n", "<leader>E", function()
+    vim.ui.open(vim.fn.getcwd())
+end, { desc = "Open Explorer", })
 
 --> PlugIn: FzfLua
-vim.keymap.set("n", "<leader>p", "<cmd>FzfLua<cr>")
-vim.keymap.set("n", "<leader>b", "<cmd>FzfLua buffers<cr>")
-vim.keymap.set("n", "<leader>O", "<cmd>FzfLua lsp_document_symbols<cr>")
-vim.keymap.set("n", "<leader>o", "<cmd>FzfLua treesitter<cr>")
+vim.keymap.set("n", "<leader>f", "<cmd>FzfLua global<cr>")
+vim.keymap.set("n", "<leader>F", "<cmd>FzfLua<cr>")
+vim.keymap.set("n", "<leader>/", "<cmd>FzfLua live_grep<cr>")
 
---> PlugIn: GitSign
--- preview_hunk, next_hunk, prev_hunk, blame_line
-require("gitsigns").setup({})
+-- Toggle between splits inside windows
+vim.keymap.set("n", "<leader>w", "<C-w>w")
+-- Toggle between alternative buffer
+vim.keymap.set("n", "<leader><leader>", "<cmd>b#<CR>")
 
---> PlugIn: TreeSitter
-require("nvim-treesitter").install({
-    "lua",
-    "vim",
-    "vimdoc",
-    "query",
-    "markdown",
-    "markdown_inline",
-    "bash",
-    "python",
-    "javascript",
-    "typescript",
-    "tsx",
-    "html",
-    "xml",
-    "css",
-    "json",
-    "yaml",
-    "go",
-    "rust",
-    "c",
-    "cpp",
-    "typst",
-    "powershell",
-})
+--> `gc` comment selections
+--> `gf` jump to file
+--> `gv` select last visual selection
+--> `[n]gg / [n]G` jump to #n line
 
-vim.api.nvim_create_autocmd("FileType", {
-    callback = function()
-        pcall(vim.treesitter.start)
-    end,
-})
+--> `==` tab this line
+--> `gg=G` tab all fiels
 
---> PlugIn: Blink.CMP
-require("blink.cmp").setup({
-    keymap = {
-        preset = "super-tab",
-        ["<C-@>"] = { "show" },
-    },
+--> `gqq` format this line
+--> `gq`  format selections
 
-    sources = {
-        default = {
-            "lsp",
-            "path",
-            "snippets",
-            "buffer",
-        },
-    },
+--> Completion must load before LSP capabilities are configured.
+require("completion").setup()
 
-    completion = {
-        menu = {
-            auto_show = false,
-        },
-
-        documentation = {
-            auto_show = true,
-            auto_show_delay_ms = 300,
-        },
-
-        ghost_text = {
-            enabled = true,
-            show_with_menu = true,
-        },
-    },
-})
-
-vim.lsp.config("*", {
-    capabilities = require("blink.cmp").get_lsp_capabilities(),
-})
-
---> PlugIn: markdown-preview
-require("typst_preview").setup()
-
-require("markdown_preview").setup({
-    default_theme = "auto",
-    follow_current_buffer = true,
-    scroll_sync = true,
-})
-
---> LSP: 
+--> Language support: Treesitter and LSP
 require("lsp").setup()
 
--- bind blink.cmp
-vim.lsp.config("*", {
-    capabilities = require("blink.cmp").get_lsp_capabilities(),
+--> PlugIn: Mini.Surround
+--> `sa` add , with selections
+--> `sd` delete, without selection
+--> `sr` replace
+-->
+require("mini.surround").setup({
+    custom_surroundings = {
+        b = {
+            input = { "%*%*().-()%*%*" },
+            output = { left = "**", right = "**" },
+        },
+    },
 })
-
-vim.keymap.set("v", "<leader>f", function()
-    vim.lsp.buf.format({
-        async = false,
-    })
-    vim.cmd("normal! \27")
-end, { desc = "Format selected range" })
 
 vim.keymap.set("n", "<leader>l", function()
     vim.diagnostic.open_float({
         scope = "line",
         source = true,
     })
-end, { desc = "Show line diagnostics", })
+end, { desc = "Show line diagnostics" })
 
 vim.keymap.set("n", "<leader>L", function()
     local win = vim.fn.getloclist(0, { winid = 0 }).winid
@@ -190,6 +169,6 @@ vim.keymap.set("n", "<leader>L", function()
     else
         vim.diagnostic.setloclist({ open = true })
     end
-end, { desc = "Toggle diagnostics loclist", })
+end, { desc = "Toggle diagnostics loclist" })
 
--->LSPConfig
+
