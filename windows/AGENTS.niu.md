@@ -1,12 +1,12 @@
 # Windows shell environment
 
 This Windows machine uses Niubash as its Bash environment. 
-Niubash cannot currently start inside the restricted unified-exec sandbox.
 
 For every `exec_command` call, always set:
 
     shell = "bash"
-    sandbox_permissions = "require_escalated"
+
+Use the default sandbox unless escalation is genuinely required.
 
 The `bash.exe` on PATH forwards commands to Niubash. Use Bash syntax directly.
 
