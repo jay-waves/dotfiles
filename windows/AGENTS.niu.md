@@ -1,27 +1,22 @@
 # Windows shell environment
 
-This machine runs Windows with Niubash as its Bash environment.
+This Windows machine uses Niubash as its Bash environment. 
+Niubash cannot currently start inside the restricted unified-exec sandbox.
 
-For every `exec_command` call, ALWAYS set:
+For every `exec_command` call, always set:
 
     shell = "bash"
+    sandbox_permissions = "require_escalated"
 
-Do not omit the `shell` parameter.
+The `bash.exe` on PATH forwards commands to Niubash. Use Bash syntax directly.
 
-The `bash.exe` on PATH is the Niubash forwarder to `niu.exe -c`, so commands
-executed with `shell="bash"` run in Niubash.
-
-Use Bash syntax directly.
-
-Do not invoke `pwsh`, `powershell.exe`, or `cmd.exe` unless explicitly required.
-Do not wrap Bash commands inside PowerShell.
-
-If the active terminal/tool session is already Niubash, run project commands directly. 
-Do not wrap ordinary work in `niu -c`.
+Do not wrap commands in `niu -c`, PowerShell, or `cmd.exe` unless explicitly
+required.
 
 ## Environment
 
 Available on PATH:
+
 - niu.exe / Bash
 - Go
 - Node.js

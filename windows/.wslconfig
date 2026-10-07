@@ -1,0 +1,5 @@
+[wsl2]
+memory=24GB
+networkingMode=mirrored
+autoProxy=false
+virtiofs=true
